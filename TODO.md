@@ -42,23 +42,25 @@ Each open item is written to be **issue-ready** — copy it into a GitHub Issue 
 
 ## ⬜ Open — Access & permissions
 
-- ⬜ **Gate submissions by Star Atlas guild level (default Level 3, admin-configurable)**
-  - **Why:** restrict submissions to engaged/verified guild members — cut spam and low-effort entries while keeping
-    browsing (and likely voting) open to everyone.
-  - **Where:** `auth.ts` (add Discord `guilds.members.read` scope + fetch the member object on login),
-    `prisma/schema.prisma` (`User.guildLevel Int?`, optionally `User.guildRolesJson String?`),
-    `Settings` (`guildId`, `minSubmitLevel` default 3, and the level→role mapping), `app/actions/submissions.ts`
-    (server-side gate), `app/requests/[id]/SubmitForm.tsx` (show a "Reach Level N in the guild to submit" notice
-    instead of the form), Admin dashboard (configure guild id + threshold), dev-login (let local testing simulate a level).
-  - **Note:** Discord has no native numeric "level" — levels usually come from a leveling bot (MEE6 / Carl-bot)
-    surfaced as **roles** (e.g. a "Level 3" role). So the admin config most likely maps a Discord **role ID** (or a set
-    of role IDs) to the minimum, rather than a raw number. Refresh the user's level on each login (and/or a manual
-    "re-sync" button) since roles change over time.
-  - **❓ Needs Siphaawal input:** (1) how is "level" defined in your guild — which leveling bot / role naming?
-    (2) the guild ID, (3) should **voting** also be gated or stay open to all signed-in users?
-  - **Done when:** a below-threshold member sees a blocked submit form with a clear explainer; a Level-3+ member can
-    submit; admin can change the threshold/role and it takes effect immediately; the rule is enforced server-side
-    (not just hidden in the UI).
+- ⬜ **(Future / to design) Gate submissions by Star Atlas guild level (e.g. Level 3, admin-configurable)**
+  - **Status:** idea to revisit later — **not committed**. Leaving this here so we remember to think it through
+    before building.
+  - **Why:** restrict *submissions* to engaged/verified guild members — cut spam and low-effort entries — while
+    browsing and voting stay open to all signed-in members.
+  - **The hard part to think about:** Discord has **no native numeric "level."** Levels normally come from a
+    leveling bot (MEE6 / Carl-bot, etc.) surfaced as **roles** (e.g. a "Level 3" role). So before building we need
+    to decide how the app learns a member's level — most likely by reading their **roles** in the guild via the
+    Discord `guilds.members.read` scope and mapping a configured role (or role set) to "minimum to submit," rather
+    than a raw number. Levels change over time, so we'd refresh on login and/or offer a manual re-sync.
+  - **Rough shape (when we build):** Discord `guilds.members.read` scope in `auth.ts`; persist level/roles on
+    `User`; `Settings` (`guildId`, min role/level); server-side gate in `app/actions/submissions.ts`; a "you need
+    Level N to submit" notice in `app/requests/[id]/SubmitForm.tsx`; admin config; dev-login simulates a level.
+  - **Decided:** voting is **not** level-gated — see the voting item below.
+  - **Done when (eventually):** a below-threshold member sees a blocked submit form with a clear explainer; an
+    eligible member can submit; admin can change the threshold/role live; enforced server-side, not just hidden.
+
+- ✅ **Voting requires sign-in (already enforced)** — `toggleVote` calls `requireUser()` and the vote button
+  prompts unauthenticated visitors to sign in. Any signed-in member can vote; voting is **not** level-gated.
 
 - ⬜ **Register the Discord OAuth app for production**
   - **Why:** turn on real login (dev bypass is local-only).
@@ -227,8 +229,9 @@ Each open item is written to be **issue-ready** — copy it into a GitHub Issue 
 
 ## Known limitations / decisions on record
 
-- **Submission gating not yet enforced** — any signed-in member can currently submit; the Level-3 guild gate is
-  planned (see Access & permissions).
+- **Voting:** signed-in members only (enforced today); **not** level-gated.
+- **Submission gating:** any signed-in member can currently submit. A guild-level gate (e.g. Level 3) is a **future
+  idea to design**, not committed — see Access & permissions.
 - **Exact image count** is enforced (not "at least"). Open decision tracked above.
 - **Multi-accept naming:** each accepted image commits under a distinct tier/index suffix, so accepting multiple
   submissions for the same request no longer silently overwrites files.
