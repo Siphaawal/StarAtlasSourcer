@@ -1,26 +1,119 @@
 @import "tailwindcss";
 
+/*
+  Star Atlas Sourcer — theme
+  Deep-space dark base, plasma-cyan accents, AEP "Aephia" gold highlights.
+*/
+
+@theme {
+  --color-void: #05070f;
+  --color-deep: #0a0e1c;
+  --color-panel: #0f1626;
+  --color-panel-2: #141d33;
+  --color-edge: #1f2c47;
+  --color-edge-bright: #2f4068;
+
+  --color-cyan: #34e0ff;
+  --color-cyan-dim: #1c93ad;
+  --color-gold: #f5c451;
+  --color-gold-dim: #b8923a;
+  --color-violet: #7b6cff;
+  --color-danger: #ff5c7a;
+  --color-success: #3ce8a0;
+
+  --color-ink: #e7eefc;
+  --color-muted: #8da2c7;
+  --color-faint: #5a6c8f;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background-color: #05070f;
+  color: #e7eefc;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  /* layered starfield + nebula glow */
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, rgba(52, 224, 255, 0.08), transparent 60%),
+    radial-gradient(1000px 500px at 10% 110%, rgba(123, 108, 255, 0.08), transparent 60%),
+    radial-gradient(800px 400px at 50% 50%, rgba(245, 196, 81, 0.03), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* ── Utility component classes ── */
+@layer components {
+  .panel {
+    @apply rounded-xl border border-[#1f2c47] bg-[#0f1626]/80 backdrop-blur-sm;
+  }
+  .panel-hover {
+    @apply transition-all duration-200 hover:border-[#34e0ff]/40 hover:bg-[#141d33]/80;
+  }
+
+  .btn,
+  .btn-primary,
+  .btn-gold,
+  .btn-ghost,
+  .btn-danger,
+  .btn-success {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-[#34e0ff] text-[#05070f] hover:bg-[#5fe9ff] hover:shadow-[0_0_20px_rgba(52,224,255,0.45)];
+  }
+  .btn-gold {
+    @apply bg-[#f5c451] text-[#05070f] hover:bg-[#ffd877] hover:shadow-[0_0_20px_rgba(245,196,81,0.4)];
+  }
+  .btn-ghost {
+    @apply border border-[#1f2c47] bg-transparent text-[#e7eefc] hover:border-[#34e0ff]/50 hover:bg-[#141d33];
+  }
+  .btn-danger {
+    @apply border border-[#ff5c7a]/40 bg-transparent text-[#ff5c7a] hover:bg-[#ff5c7a]/10;
+  }
+  .btn-success {
+    @apply bg-[#3ce8a0] text-[#05070f] hover:bg-[#5cf0b5];
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-[#1f2c47] bg-[#0a0e1c] px-2.5 py-0.5 text-xs font-medium text-[#8da2c7];
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-[#1f2c47] bg-[#0a0e1c] px-3 py-2 text-sm text-[#e7eefc] placeholder-[#5a6c8f] outline-none transition focus:border-[#34e0ff]/60 focus:ring-1 focus:ring-[#34e0ff]/40;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#8da2c7];
+  }
+
+  .glow-cyan {
+    text-shadow: 0 0 16px rgba(52, 224, 255, 0.55);
+  }
+  .glow-gold {
+    text-shadow: 0 0 16px rgba(245, 196, 81, 0.5);
+  }
+}
+
+/* thin sci-fi scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0e1c;
+}
+::-webkit-scrollbar-thumb {
+  background: #1f2c47;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2f4068;
 }
