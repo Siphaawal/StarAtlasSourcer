@@ -41,6 +41,9 @@ yarn-error.log*
 # local dev server log
 dev.log
 
+# local editor / agent config
+.claude/
+
 # user-uploaded assets (local storage)
 /public/uploads/*
 !/public/uploads/.gitkeep

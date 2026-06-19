@@ -6,6 +6,95 @@ The team posts asset bounties → the community generates and submits art → pi
 cross a configurable threshold enter team review → accepted assets are committed to a GitHub repo and the
 creator earns a leaderboard point.
 
+## Demo
+
+> Screenshots are generated from seeded demo data — see [Regenerating the docs](#regenerating-screenshots--docs).
+
+![Landing](docs/screenshots/landing.png)
+
+<table>
+<tr>
+<td width="50%"><strong>Collab Requests</strong><br/><img src="docs/screenshots/requests-list.png" alt="Collab requests list"/></td>
+<td width="50%"><strong>Request detail (submit + vote)</strong><br/><img src="docs/screenshots/request-detail.png" alt="Request detail"/></td>
+</tr>
+<tr>
+<td width="50%"><strong>Submissions gallery</strong><br/><img src="docs/screenshots/submissions.png" alt="Submissions gallery"/></td>
+<td width="50%"><strong>Team Review</strong><br/><img src="docs/screenshots/team-review.png" alt="Team review queue"/></td>
+</tr>
+<tr>
+<td width="50%"><strong>Leaderboard</strong><br/><img src="docs/screenshots/leaderboard.png" alt="Leaderboard"/></td>
+<td width="50%"><strong>Admin dashboard</strong><br/><img src="docs/screenshots/admin.png" alt="Admin dashboard"/></td>
+</tr>
+</table>
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Client["Browser"]
+        UI["React 19 UI<br/>(Tailwind v4, themed)"]
+    end
+
+    subgraph Next["Next.js 16 App Router"]
+        Pages["Server Components / Pages"]
+        Actions["Server Actions<br/>(requests · submissions · votes · review · settings · templates)"]
+        AuthRoute["/api/auth/[...nextauth]"]
+    end
+
+    subgraph Lib["lib/"]
+        AuthHelpers["auth-helpers<br/>(role gating)"]
+        Storage["storage<br/>(image uploads)"]
+        Naming["naming<br/>(commit filenames)"]
+        GitHubLib["github (Octokit)"]
+        Settings["settings"]
+    end
+
+    subgraph Auth["Auth.js / NextAuth v5"]
+        Discord["Discord OAuth"]
+        DevLogin["Dev login (local)"]
+    end
+
+    DB[("Prisma + SQLite<br/>User · CollabRequest · RequestTemplate<br/>Submission · SubmissionImage · Vote · Settings")]
+    Files[["public/uploads/<br/>(backgrounds, submissions)"]]
+    GitHub[["GitHub repo<br/>(accepted assets)"]]
+
+    UI --> Pages
+    UI --> Actions
+    Pages --> DB
+    Actions --> AuthHelpers
+    Actions --> DB
+    Actions --> Storage --> Files
+    Actions --> GitHubLib --> GitHub
+    Actions --> Naming
+    AuthRoute --> Auth
+    AuthHelpers --> Auth
+    Auth --> DB
+```
+
+## How it works (flow)
+
+```mermaid
+sequenceDiagram
+    actor Team
+    actor Member as Community
+    participant App as Star Atlas Sourcer
+    participant GH as GitHub repo
+
+    Team->>App: Create Collab Request<br/>(spec, background, #images 1-5, output name)
+    Member->>App: Submit asset (exactly N images)
+    Member->>App: Upvote submissions
+    Note over App: voteCount ≥ admin threshold?
+    App->>App: Promote submission to TEAM_REVIEW<br/>(hidden from public pool)
+    Team->>App: Accept ✓ or Reject ✕
+    alt Accepted
+        App->>App: +1 leaderboard point to author
+        App->>GH: Commit each image<br/>(warp-drive-t1..t5.png)
+        App-->>Team: Committed + point awarded
+    else Rejected
+        App-->>Team: Archived
+    end
+```
+
 ## Stack
 
 - **Next.js 16** (App Router, Server Actions, Turbopack) + **React 19** + **TypeScript**
@@ -74,6 +163,8 @@ When the team accepts a submission, the image is committed to
 | `npm run db:seed` | seed sample data |
 | `npm run db:studio` | open Prisma Studio |
 | `npm run db:reset` | reset the database |
+| `npm run demo:seed` | add placeholder demo submissions (for screenshots) |
+| `npm run screenshots` | regenerate README screenshots (server must be running) |
 
 ## Project layout
 
@@ -91,7 +182,25 @@ prisma/           schema, migrations, seed
 components/       Navbar, cards, badges, vote button
 ```
 
+## Regenerating screenshots / docs
+
+The diagrams above are inline [Mermaid](https://mermaid.js.org/) — edit them directly in this README and GitHub
+re-renders them. **Keep the architecture & flow diagrams in sync whenever the model, routes, or flow change.**
+
+Screenshots live in [`docs/screenshots/`](docs/screenshots) and are produced from seeded demo data:
+
+```bash
+npm run dev                 # in one terminal
+npm run db:seed             # base data (settings, users, sample request)
+npm run demo:seed           # placeholder submissions in varied states
+npm run screenshots         # captures docs/screenshots/*.png via headless Chromium
+```
+
+Re-run `npm run screenshots` after any UI change so the README stays current.
+
 ## Notes / next steps
+
+See [TODO.md](TODO.md) for the full roadmap and contributor task list.
 
 - SQLite + local file storage is for getting started. For production, move the Prisma datasource to Postgres
   and uploads to object storage (S3 / R2 / Supabase storage).
