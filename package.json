@@ -12,7 +12,8 @@
     "db:reset": "prisma migrate reset",
     "demo:seed": "node scripts/demo-seed.mjs",
     "rewards:seed": "node scripts/seed-rewards.mjs",
-    "screenshots": "node scripts/screenshots.mjs"
+    "screenshots": "node scripts/screenshots.mjs",
+    "deck": "node scripts/build-deck.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
