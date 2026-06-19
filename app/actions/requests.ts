@@ -26,6 +26,10 @@ export async function createRequest(formData: FormData): Promise<ActionResult> {
     const tierMax = Math.max(tierMin, num(formData.get("tierMax"), 5));
     const maxFileSizeMB = Math.min(50, Math.max(1, num(formData.get("maxFileSizeMB"), 10)));
 
+    const targetWeb = formData.get("targetWeb") === "on";
+    const targetUE5 = formData.get("targetUE5") === "on";
+    if (!targetWeb && !targetUE5) return { ok: false, error: "Pick at least one platform (Web or UE5)." };
+
     let backgroundPath: string | undefined;
     const bg = formData.get("background");
     if (bg instanceof File && bg.size > 0) {
@@ -39,6 +43,8 @@ export async function createRequest(formData: FormData): Promise<ActionResult> {
         assetType: String(formData.get("assetType") || ""),
         outputFileName: String(formData.get("outputFileName") || "").trim(),
         imageCount: clampImageCount(num(formData.get("imageCount"), 1)),
+        targetWeb,
+        targetUE5,
         tierMin,
         tierMax,
         aspectRatio: String(formData.get("aspectRatio") || "1:1"),

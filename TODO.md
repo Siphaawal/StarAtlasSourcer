@@ -26,6 +26,8 @@ The single source of truth for what's built and what's left. Contributors: grab 
 - ✅ **Submissions gallery** tab with status filters
 - ✅ **Admin dashboard**: upvote threshold, GitHub target (+ test connection), member role management
 - ✅ **GitHub commit-on-accept** (Octokit), per-tier filenames (`warp-drive-t1.png` … `-t5.png`)
+- ✅ **Platform tagging** (Web / UE5) on requests + filtering on requests & submissions; UE5 "Coming Soon" tab
+- ✅ **ATMTA usage disclaimer** on submission (required acknowledgment, recorded at submit time)
 
 ---
 
@@ -72,6 +74,20 @@ The single source of truth for what's built and what's left. Contributors: grab 
 - ⬜ Discord webhook: new request posted, submission accepted
 
 ---
+
+### UE5 assets (planned — "Coming Soon" tab is live as a placeholder)
+- ⬜ Define UE5 submission formats (meshes `.fbx`/`.uasset`, materials, textures) + storage handling
+- ⬜ UE5-specific spec template fields (poly budget, LODs, texel density, UV sets, collision)
+- ⬜ Validation of uploads against UE5 specs
+- ⬜ UE5 asset preview (thumbnail render or turntable) in submissions/review
+- ⬜ Build out the `/ue5` tab from placeholder into a real browse/submit experience
+- ⬜ Per-platform leaderboards (Web vs UE5)
+- ⬜ GitHub commit pathing per platform (e.g. `assets/web/…` vs `assets/ue5/…`)
+
+### Legal
+- ⬜ **Have counsel review the submission disclaimer** in `lib/constants.ts` (`SUBMISSION_DISCLAIMER`) — current
+  text is a placeholder. Consider versioning + storing the accepted version per submission (field exists:
+  `termsAcceptedAt`; add `termsVersion` if needed).
 
 ## 💡 Ideas (not scoped yet)
 

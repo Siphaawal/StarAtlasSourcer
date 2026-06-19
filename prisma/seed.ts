@@ -61,6 +61,30 @@ async function main() {
     });
   }
 
+  // A second sample request targeting UE5 (and Web) to demo platform filtering.
+  const ue5Existing = await prisma.collabRequest.findFirst({ where: { title: "Station Module — UE5 Prop" } });
+  if (!ue5Existing) {
+    await prisma.collabRequest.create({
+      data: {
+        title: "Station Module — UE5 Prop",
+        description: "Concept art for a modular station prop, intended for an Unreal Engine 5 asset down the line.",
+        assetType: "Station Module",
+        outputFileName: "station-module",
+        imageCount: 1,
+        targetWeb: true,
+        targetUE5: true,
+        tierMin: 1,
+        tierMax: 1,
+        aspectRatio: "16:9",
+        resolution: "1920x1080",
+        format: "PNG",
+        colorPalette: "Industrial greys, warning amber",
+        styleNotes: "Modular, greebled surfaces, readable silhouette.",
+        authorId: team.id,
+      },
+    });
+  }
+
   console.log("Seeded:", {
     admin: admin.username,
     team: team.username,

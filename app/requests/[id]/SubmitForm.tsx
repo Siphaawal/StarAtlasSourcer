@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { submitAsset } from "@/app/actions/submissions";
+import { SUBMISSION_DISCLAIMER } from "@/lib/constants";
 
 export function SubmitForm({
   requestId,
@@ -21,6 +22,7 @@ export function SubmitForm({
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const multi = imageCount > 1;
   const countMatches = files.length === imageCount;
@@ -41,6 +43,10 @@ export function SubmitForm({
       setError(`This request needs exactly ${imageCount} image${imageCount === 1 ? "" : "s"} — you selected ${files.length}.`);
       return;
     }
+    if (!agreed) {
+      setError("Please accept the submission terms before submitting.");
+      return;
+    }
     setSubmitting(true);
     const fd = new FormData(formRef.current!);
     fd.set("requestId", requestId);
@@ -54,6 +60,7 @@ export function SubmitForm({
     setOk(true);
     setFiles([]);
     setPreviews([]);
+    setAgreed(false);
     formRef.current?.reset();
     if (fileRef.current) fileRef.current.value = "";
     router.refresh();
@@ -109,10 +116,28 @@ export function SubmitForm({
         </div>
       )}
 
+      {/* ATMTA usage disclaimer */}
+      <div className="rounded-lg border border-[#1f2c47] bg-[#0a0e1c] p-3">
+        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[#f5c451]">Submission terms</div>
+        <p className="max-h-32 overflow-y-auto whitespace-pre-line text-[11px] leading-relaxed text-[#8da2c7]">
+          {SUBMISSION_DISCLAIMER}
+        </p>
+        <label className="mt-3 flex cursor-pointer items-start gap-2 text-xs text-[#e7eefc]">
+          <input
+            name="agree"
+            type="checkbox"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-[#34e0ff]"
+          />
+          <span>I have read and accept these terms, and confirm I hold the rights to this work.</span>
+        </label>
+      </div>
+
       {error && <div className="text-sm text-[#ff5c7a]">{error}</div>}
       {ok && <div className="text-sm text-[#3ce8a0]">Submitted! It&apos;s now live for the community to upvote.</div>}
 
-      <button type="submit" disabled={submitting || !countMatches} className="btn-primary">
+      <button type="submit" disabled={submitting || !countMatches || !agreed} className="btn-primary">
         {submitting ? "Uploading…" : `Submit ${imageCount} image${imageCount === 1 ? "" : "s"} for review`}
       </button>
     </form>

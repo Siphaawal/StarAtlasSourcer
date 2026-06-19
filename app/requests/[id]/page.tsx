@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, canReview } from "@/lib/auth-helpers";
 import { getSettings } from "@/lib/settings";
+import { platformChips } from "@/lib/constants";
 import { SpecChips } from "@/components/SpecChips";
 import { RequestStatusBadge } from "@/components/StatusBadge";
 import { SubmissionCard } from "@/components/SubmissionCard";
@@ -73,7 +74,10 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                 {tier} · posted by {request.author.username || request.author.name || "Team"}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {platformChips(request).map((c) => (
+                <span key={c} className="chip border-[#7b6cff]/40 text-[#a99bff]">{c}</span>
+              ))}
               <RequestStatusBadge status={request.status} />
               {canReview(user?.role) && <RequestStatusToggle requestId={request.id} status={request.status} />}
             </div>

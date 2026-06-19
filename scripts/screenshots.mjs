@@ -7,8 +7,11 @@
 // Writes PNGs to docs/screenshots/. Re-run any time the UI changes.
 
 import { chromium } from "playwright";
+import { PrismaClient } from "@prisma/client";
 import { mkdir } from "fs/promises";
 import path from "path";
+
+const prisma = new PrismaClient();
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const OUT = path.join(process.cwd(), "docs", "screenshots");
@@ -44,6 +47,7 @@ async function main() {
     ["/", "landing"],
     ["/requests", "requests-list"],
     ["/submissions", "submissions"],
+    ["/ue5", "ue5-coming-soon"],
     ["/team", "team-review"],
     ["/leaderboard", "leaderboard"],
     ["/admin", "admin"],
@@ -54,13 +58,19 @@ async function main() {
     await shoot(page, name);
   }
 
-  // Request detail — open an actual request row (exclude the "New Request" button).
-  await page.goto(`${BASE}/requests`, { waitUntil: "networkidle" });
-  await page.locator('a[href^="/requests/"]:not([href="/requests/new"])').first().click();
-  await page.waitForLoadState("networkidle");
-  await shoot(page, "request-detail");
+  // Request detail — navigate directly to a request with the most submissions (deterministic).
+  const detail =
+    (await prisma.collabRequest.findFirst({
+      orderBy: { submissions: { _count: "desc" } },
+      select: { id: true },
+    })) || (await prisma.collabRequest.findFirst({ select: { id: true } }));
+  if (detail) {
+    await page.goto(`${BASE}/requests/${detail.id}`, { waitUntil: "networkidle" });
+    await shoot(page, "request-detail");
+  }
 
   await browser.close();
+  await prisma.$disconnect();
   console.log(`\nScreenshots written to ${OUT}`);
 }
 

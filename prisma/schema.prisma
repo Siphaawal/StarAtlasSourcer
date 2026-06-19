@@ -94,6 +94,9 @@ model CollabRequest {
   outputFileName  String        @default("")
   // How many images a submission must include (e.g. Tier 1-5 = 5). Capped at 5 by the app.
   imageCount      Int           @default(1)
+  // Target platform(s) for the asset. At least one is required.
+  targetWeb       Boolean       @default(true)
+  targetUE5       Boolean       @default(false)
   tierMin         Int           @default(1)
   tierMax         Int           @default(5)
   // Reference background uploaded by the team for this request
@@ -154,6 +157,8 @@ model Submission {
   notes       String           @default("")
   status      SubmissionStatus @default(PENDING)
   voteCount   Int              @default(0)
+  // When the author accepted the ATMTA usage disclaimer at submit time (audit record).
+  termsAcceptedAt DateTime?
   reviewedById String?
   reviewedAt   DateTime?
   createdAt    DateTime         @default(now())

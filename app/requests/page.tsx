@@ -3,12 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser, canReview } from "@/lib/auth-helpers";
 import { SpecChips } from "@/components/SpecChips";
 import { RequestStatusBadge } from "@/components/StatusBadge";
+import { PlatformFilter, platformWhere } from "@/components/PlatformFilter";
+import { platformChips } from "@/lib/constants";
 
 export const metadata = { title: "Collab Requests — Star Atlas Sourcer" };
 
-export default async function RequestsPage() {
+export default async function RequestsPage({ searchParams }: { searchParams: Promise<{ platform?: string }> }) {
+  const { platform = "all" } = await searchParams;
   const user = await getCurrentUser();
   const requests = await prisma.collabRequest.findMany({
+    where: platformWhere(platform),
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     include: { _count: { select: { submissions: true } }, author: true },
   });
@@ -27,9 +31,12 @@ export default async function RequestsPage() {
         )}
       </div>
 
+      <PlatformFilter current={platform} hrefFor={(k) => (k === "all" ? "/requests" : `/requests?platform=${k}`)} />
+
       {requests.length === 0 ? (
         <div className="panel p-10 text-center text-[#8da2c7]">
-          No requests yet.{canReview(user?.role) ? " Create the first one!" : " Check back soon."}
+          No {platform === "ue5" ? "UE5 " : platform === "web" ? "Web " : ""}requests yet.
+          {canReview(user?.role) ? " Create the first one!" : " Check back soon."}
         </div>
       ) : (
         <div className="panel divide-y divide-[#1f2c47] overflow-hidden">
@@ -48,9 +55,12 @@ export default async function RequestsPage() {
                 )}
               </div>
               <div className="min-w-0 flex-1 space-y-1.5">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h2 className="truncate font-semibold text-[#e7eefc]">{r.title}</h2>
                   <RequestStatusBadge status={r.status} />
+                  {platformChips(r).map((c) => (
+                    <span key={c} className="chip border-[#7b6cff]/40 text-[#a99bff]">{c}</span>
+                  ))}
                 </div>
                 {r.description && <p className="line-clamp-1 text-sm text-[#8da2c7]">{r.description}</p>}
                 <SpecChips request={r} />

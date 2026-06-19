@@ -9,6 +9,7 @@ export async function Navbar() {
   const links: { href: string; label: string }[] = [
     { href: "/requests", label: "Collab Requests" },
     { href: "/submissions", label: "Submissions" },
+    { href: "/ue5", label: "UE5 ◐" },
     { href: "/leaderboard", label: "Leaderboard" },
   ];
   if (canReview(user?.role)) links.push({ href: "/team", label: "Team Review" });

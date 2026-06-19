@@ -17,6 +17,11 @@ export async function submitAsset(formData: FormData): Promise<ActionResult<{ id
     if (!request) return { ok: false, error: "Request not found." };
     if (request.status !== RequestStatus.OPEN) return { ok: false, error: "This request is closed." };
 
+    // The author must accept the ATMTA usage disclaimer.
+    if (formData.get("agree") !== "on") {
+      return { ok: false, error: "You must accept the submission terms before submitting." };
+    }
+
     // A submission must include exactly the number of images the team requested.
     const files = formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
     const required = request.imageCount;
@@ -39,6 +44,7 @@ export async function submitAsset(formData: FormData): Promise<ActionResult<{ id
         authorId: user.id,
         title: String(formData.get("title") || "").trim(),
         notes: String(formData.get("notes") || "").trim(),
+        termsAcceptedAt: new Date(),
         images: { create: paths.map((path, position) => ({ path, position })) },
       },
     });

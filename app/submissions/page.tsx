@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SubmissionStatusBadge } from "@/components/StatusBadge";
 import { SubmissionThumbs } from "@/components/SubmissionThumbs";
+import { PlatformFilter, platformWhere } from "@/components/PlatformFilter";
 import { SubmissionStatus } from "@prisma/client";
 
 export const metadata = { title: "Submissions — Star Atlas Sourcer" };
@@ -14,16 +15,28 @@ const FILTERS: { key: string; label: string; status?: SubmissionStatus }[] = [
   { key: "rejected", label: "Rejected", status: SubmissionStatus.REJECTED },
 ];
 
+function href(filter: string, platform: string): string {
+  const p = new URLSearchParams();
+  if (filter !== "all") p.set("filter", filter);
+  if (platform !== "all") p.set("platform", platform);
+  const qs = p.toString();
+  return qs ? `/submissions?${qs}` : "/submissions";
+}
+
 export default async function SubmissionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; platform?: string }>;
 }) {
-  const { filter = "all" } = await searchParams;
+  const { filter = "all", platform = "all" } = await searchParams;
   const active = FILTERS.find((f) => f.key === filter) ?? FILTERS[0];
 
+  const platformFilter = platformWhere(platform);
   const submissions = await prisma.submission.findMany({
-    where: active.status ? { status: active.status } : undefined,
+    where: {
+      ...(active.status ? { status: active.status } : {}),
+      ...(Object.keys(platformFilter).length ? { request: platformFilter } : {}),
+    },
     orderBy: { createdAt: "desc" },
     include: {
       author: true,
@@ -39,11 +52,13 @@ export default async function SubmissionsPage({
         <p className="text-sm text-[#8da2c7]">Every asset submitted across all collab requests.</p>
       </div>
 
+      <PlatformFilter current={platform} hrefFor={(k) => href(filter, k)} />
+
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <Link
             key={f.key}
-            href={f.key === "all" ? "/submissions" : `/submissions?filter=${f.key}`}
+            href={href(f.key, platform)}
             className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition ${
               active.key === f.key
                 ? "border-[#34e0ff] bg-[#34e0ff]/10 text-[#34e0ff]"

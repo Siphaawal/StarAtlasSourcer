@@ -216,6 +216,20 @@ export function RequestForm({
           <label className="label">Asset type</label>
           <input name="assetType" value={spec.assetType} onChange={(e) => set("assetType", e.target.value)} className="input" placeholder="Warp Drive" />
         </div>
+        <div>
+          <label className="label">Platform</label>
+          <div className="flex flex-wrap gap-4">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-[#e7eefc]">
+              <input name="targetWeb" type="checkbox" defaultChecked className="h-4 w-4 accent-[#34e0ff]" />
+              🌐 Web
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-[#e7eefc]">
+              <input name="targetUE5" type="checkbox" className="h-4 w-4 accent-[#7b6cff]" />
+              🎮 UE5 <span className="chip border-[#7b6cff]/40 text-[#a99bff]">coming soon</span>
+            </label>
+          </div>
+          <p className="mt-1 text-[11px] text-[#5a6c8f]">Pick at least one. UE5 asset support is rolling out later.</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label className="label">Tier min</label>
