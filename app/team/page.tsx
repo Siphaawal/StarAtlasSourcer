@@ -81,7 +81,9 @@ export default async function TeamReviewPage() {
                       {s.request.title}
                     </Link>
                     {s.title && <div className="font-semibold text-[#e7eefc]">{s.title}</div>}
-                    <div className="text-xs text-[#8da2c7]">by {author}</div>
+                    <div className="text-xs text-[#8da2c7]">
+                      by {author} · accept awards <span className="font-semibold text-[#f5c451]">{s.request.rewardPoints} pts</span>
+                    </div>
                   </div>
                   <div className="rounded-lg border border-[#1f2c47] bg-[#0a0e1c] p-2" title="Commits to these file names on accept">
                     <div className="mb-1 text-[10px] uppercase tracking-wider text-[#5a6c8f]">Commits as</div>

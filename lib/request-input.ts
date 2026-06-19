@@ -6,6 +6,7 @@ export type RequestInput = {
   assetType?: unknown;
   outputFileName?: unknown;
   imageCount?: unknown;
+  rewardPoints?: unknown;
   targetWeb?: unknown;
   targetUE5?: unknown;
   tierMin?: unknown;
@@ -24,6 +25,7 @@ export type NormalizedRequest = {
   assetType: string;
   outputFileName: string;
   imageCount: number;
+  rewardPoints: number;
   targetWeb: boolean;
   targetUE5: boolean;
   tierMin: number;
@@ -65,6 +67,7 @@ export function normalizeRequestInput(input: RequestInput): { ok: true; data: No
       assetType: str(input.assetType),
       outputFileName: str(input.outputFileName),
       imageCount: clampImageCount(int(input.imageCount, 1)),
+      rewardPoints: Math.min(10000, Math.max(1, int(input.rewardPoints, 1))),
       targetWeb,
       targetUE5,
       tierMin,

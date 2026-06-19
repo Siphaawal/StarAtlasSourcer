@@ -9,10 +9,12 @@ export function SubmitForm({
   requestId,
   maxFileSizeMB,
   imageCount,
+  rewardPoints,
 }: {
   requestId: string;
   maxFileSizeMB: number;
   imageCount: number;
+  rewardPoints: number;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -77,7 +79,8 @@ export function SubmitForm({
       <p className="text-xs text-[#8da2c7]">
         This request requires <span className="font-semibold text-[#e7eefc]">{imageCount}</span>{" "}
         image{imageCount === 1 ? "" : "s"}
-        {multi ? " (e.g. one per tier)" : ""}. Max {maxFileSizeMB}MB each.
+        {multi ? " (e.g. one per tier)" : ""}. Max {maxFileSizeMB}MB each. Earn{" "}
+        <span className="font-semibold text-[#f5c451]">{rewardPoints} point{rewardPoints === 1 ? "" : "s"}</span> if accepted.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">

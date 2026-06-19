@@ -245,6 +245,11 @@ export function RequestForm({
             <p className="mt-1 text-[11px] text-[#5a6c8f]">Max 5. Submitters must upload exactly this many.</p>
           </div>
         </div>
+        <div className="sm:max-w-xs">
+          <label className="label">Reward points (on accept)</label>
+          <input name="rewardPoints" type="number" min={1} defaultValue={1} className="input" />
+          <p className="mt-1 text-[11px] text-[#5a6c8f]">Points the author earns if accepted. Set higher for harder / UE5 work.</p>
+        </div>
       </div>
 
       <div className="panel space-y-4 p-6">

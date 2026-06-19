@@ -112,7 +112,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
       {/* Submit */}
       {request.status === RequestStatus.OPEN ? (
         user ? (
-          <SubmitForm requestId={request.id} maxFileSizeMB={request.maxFileSizeMB} imageCount={request.imageCount} />
+          <SubmitForm requestId={request.id} maxFileSizeMB={request.maxFileSizeMB} imageCount={request.imageCount} rewardPoints={request.rewardPoints} />
         ) : (
           <div className="panel p-5 text-sm text-[#8da2c7]">
             <Link href="/signin" className="text-[#34e0ff] hover:underline">Sign in</Link> to submit an asset for this request.

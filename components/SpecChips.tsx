@@ -7,6 +7,7 @@ type Req = {
   format: string;
   maxFileSizeMB: number;
   imageCount: number;
+  rewardPoints: number;
 };
 
 export function SpecChips({ request }: { request: Req }) {
@@ -23,6 +24,7 @@ export function SpecChips({ request }: { request: Req }) {
 
   return (
     <div className="flex flex-wrap gap-1.5">
+      <span className="chip border-[#f5c451]/50 font-semibold text-[#f5c451]">🏆 {request.rewardPoints} pts</span>
       {chips.map((c) => (
         <span key={c} className="chip">
           {c}

@@ -161,6 +161,8 @@ model CollabRequest {
   outputFileName  String        @default("")
   // How many images a submission must include (e.g. Tier 1-5 = 5). Capped at 5 by the app.
   imageCount      Int           @default(1)
+  // Leaderboard points awarded to the author when a submission is accepted (harder/UE5 = more).
+  rewardPoints    Int           @default(1)
   // Target platform(s) for the asset. At least one is required.
   targetWeb       Boolean       @default(true)
   targetUE5       Boolean       @default(false)

@@ -20,6 +20,7 @@ export async function createRequest(formData: FormData): Promise<ActionResult> {
       assetType: formData.get("assetType"),
       outputFileName: formData.get("outputFileName"),
       imageCount: formData.get("imageCount"),
+      rewardPoints: formData.get("rewardPoints"),
       targetWeb: formData.get("targetWeb") === "on",
       targetUE5: formData.get("targetUE5") === "on",
       tierMin: formData.get("tierMin"),

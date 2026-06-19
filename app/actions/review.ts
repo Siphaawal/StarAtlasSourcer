@@ -55,7 +55,10 @@ export async function acceptSubmission(
         where: { id: submissionId },
         data: { status: SubmissionStatus.ACCEPTED, reviewedById: reviewer.id, reviewedAt: new Date() },
       }),
-      prisma.user.update({ where: { id: submission.authorId }, data: { points: { increment: 1 } } }),
+      prisma.user.update({
+        where: { id: submission.authorId },
+        data: { points: { increment: submission.request.rewardPoints } },
+      }),
     ]);
 
     // Commit every image (best-effort).
