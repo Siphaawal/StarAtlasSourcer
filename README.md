@@ -1,5 +1,10 @@
 # Star Atlas Sourcer
 
+### 📄 [**→ View the Pitch Deck (PDF)**](docs/StarAtlasSourcer-Pitch.pdf)
+> An 11-slide overview for ATMTA / Star Atlas management. _(Regenerate with `npm run deck`.)_
+
+---
+
 A community-sourced asset bounty & review pipeline for **Star Atlas**, themed for the **AEP / Aephia guild**.
 
 The team posts asset bounties → the community generates and submits art → pilots upvote → submissions that
