@@ -37,6 +37,9 @@ Each open item is written to be **issue-ready** — copy it into a GitHub Issue 
 - ✅ **Agent API** — REST `POST/GET /api/v1/requests` with per-member API keys; DRAFT vs OPEN (optional publish);
   Admin key management + auto-publish toggle; **MCP server** (`create_collab_request` / `list_collab_requests`)
 - ✅ **Image lightbox** — click a submission thumbnail on the request detail to view full-size (arrow/keys for sets)
+- ✅ **Rewards & redemptions** — admin creates rewards (image, description, point cost, quantity); members redeem
+  with points + a Solana wallet; availability counts down; admin payout queue (mark paid w/ optional tx, or
+  cancel-and-refund); advertised on the leaderboard. Mock Star Atlas ship rewards seeded (`npm run rewards:seed`)
 
 ---
 
@@ -181,6 +184,15 @@ Each open item is written to be **issue-ready** — copy it into a GitHub Issue 
 - ⬜ **Time-boxed leaderboards (weekly / seasonal)**
   - **Where:** derive from `Submission.reviewedAt` / accepted timestamps; period selector on `app/leaderboard/page.tsx`.
   - **Done when:** the leaderboard can scope to a time window.
+
+### Rewards (build-outs)
+- ⬜ **Spendable vs. lifetime points** — today redeeming lowers leaderboard standing (single balance). Consider a
+  separate lifetime-points field for ranking so spending doesn't drop a pilot's rank. (`User.points` + new field;
+  update `app/actions/rewards.ts`, leaderboard, rewards page.)
+- ⬜ **Notify the user when a redemption is marked paid** (in-app / Discord DM) — ties into Notifications below.
+- ⬜ **Optional on-chain payout** — let the admin trigger an actual SPL/NFT transfer instead of manual send
+  (would need a funded wallet + signing; big security surface — design carefully).
+- ⬜ **Edit a reward** (cost/quantity/description/image) after creation — only create/toggle/delete exist today.
 
 ### Notifications
 - ⬜ **Notify creators on status change (promoted / accepted / rejected)**

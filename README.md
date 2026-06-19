@@ -23,7 +23,11 @@ creator earns a leaderboard point.
 </tr>
 <tr>
 <td width="50%"><strong>Leaderboard</strong><br/><img src="docs/screenshots/leaderboard.png" alt="Leaderboard"/></td>
+<td width="50%"><strong>Rewards (redeem with points)</strong><br/><img src="docs/screenshots/rewards.png" alt="Rewards"/></td>
+</tr>
+<tr>
 <td width="50%"><strong>Admin dashboard</strong><br/><img src="docs/screenshots/admin.png" alt="Admin dashboard"/></td>
+<td width="50%"></td>
 </tr>
 </table>
 

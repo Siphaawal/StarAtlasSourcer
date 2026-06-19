@@ -48,6 +48,7 @@ async function main() {
     ["/requests", "requests-list"],
     ["/submissions", "submissions"],
     ["/ue5", "ue5-coming-soon"],
+    ["/rewards", "rewards"],
     ["/team", "team-review"],
     ["/leaderboard", "leaderboard"],
     ["/admin", "admin"],

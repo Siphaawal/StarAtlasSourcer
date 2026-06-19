@@ -6,6 +6,9 @@ import { getSettings } from "@/lib/settings";
 import { SettingsForm } from "./SettingsForm";
 import { UserRoleManager } from "./UserRoleManager";
 import { ApiKeysManager } from "./ApiKeysManager";
+import { RewardsManager } from "./RewardsManager";
+import { RedemptionsQueue } from "./RedemptionsQueue";
+import { listRewardsWithStats } from "@/lib/rewards";
 
 export const metadata = { title: "Admin — Star Atlas Sourcer" };
 
@@ -14,12 +17,18 @@ export default async function AdminPage() {
   if (!user) redirect("/signin");
   if (!isAdmin(user.role)) redirect("/");
 
-  const [settings, users, apiKeys] = await Promise.all([
+  const [settings, users, apiKeys, rewards, pendingRedemptions] = await Promise.all([
     getSettings(),
     prisma.user.findMany({ orderBy: [{ role: "asc" }, { points: "desc" }], take: 200 }),
     prisma.apiKey.findMany({
       orderBy: { createdAt: "desc" },
       include: { owner: { select: { username: true, name: true } } },
+    }),
+    listRewardsWithStats(),
+    prisma.redemption.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "asc" },
+      include: { reward: { select: { name: true } }, user: { select: { username: true, name: true } } },
     }),
   ]);
 
@@ -36,6 +45,10 @@ export default async function AdminPage() {
       <SettingsForm settings={settings} tokenPresent={!!process.env.GITHUB_TOKEN} />
 
       <ApiKeysManager keys={apiKeys} />
+
+      <RewardsManager rewards={rewards} />
+
+      <RedemptionsQueue pending={pendingRedemptions} />
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Members &amp; roles</h2>

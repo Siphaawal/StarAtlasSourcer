@@ -13,6 +13,7 @@ declare module "next-auth" {
       role: Role;
       points: number;
       username?: string | null;
+      solanaAddress?: string | null;
     } & DefaultSession["user"];
   }
 }
@@ -47,13 +48,19 @@ if (devLoginEnabled) {
         const role = (Object.values(Role) as string[]).includes(requested)
           ? (requested as Role)
           : Role.MEMBER;
-        const email = `${username.toLowerCase().replace(/[^a-z0-9]/g, "")}@dev.local`;
-
-        const user = await prisma.user.upsert({
-          where: { email },
-          update: { role },
-          create: { email, name: username, username, role },
-        });
+        // Reuse an existing user with this username (e.g. seeded pilots) so dev login
+        // reflects their real points/identity instead of creating a 0-point twin.
+        let user = await prisma.user.findFirst({ where: { username } });
+        if (user) {
+          user = await prisma.user.update({ where: { id: user.id }, data: { role } });
+        } else {
+          const email = `${username.toLowerCase().replace(/[^a-z0-9]/g, "")}@dev.local`;
+          user = await prisma.user.upsert({
+            where: { email },
+            update: { role },
+            create: { email, name: username, username, role },
+          });
+        }
         return {
           id: user.id,
           name: user.name,
@@ -86,6 +93,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           session.user.role = dbUser.role;
           session.user.points = dbUser.points;
           session.user.username = dbUser.username;
+          session.user.solanaAddress = dbUser.solanaAddress;
           session.user.name = dbUser.name;
           session.user.image = dbUser.image;
         }

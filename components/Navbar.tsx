@@ -11,6 +11,7 @@ export async function Navbar() {
     { href: "/submissions", label: "Submissions" },
     { href: "/ue5", label: "UE5 ◐" },
     { href: "/leaderboard", label: "Leaderboard" },
+    { href: "/rewards", label: "Rewards" },
   ];
   if (canReview(user?.role)) links.push({ href: "/team", label: "Team Review" });
   if (isAdmin(user?.role)) links.push({ href: "/admin", label: "Admin" });

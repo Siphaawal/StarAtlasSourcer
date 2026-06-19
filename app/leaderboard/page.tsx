@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { listRewardsWithStats } from "@/lib/rewards";
 import { SubmissionStatus } from "@prisma/client";
 
 export const metadata = { title: "Leaderboard — Star Atlas Sourcer" };
@@ -7,7 +9,7 @@ export const metadata = { title: "Leaderboard — Star Atlas Sourcer" };
 export default async function LeaderboardPage() {
   const user = await getCurrentUser();
 
-  const [users, acceptedCounts] = await Promise.all([
+  const [users, acceptedCounts, rewards] = await Promise.all([
     prisma.user.findMany({
       where: { OR: [{ points: { gt: 0 } }, { submissions: { some: {} } }] },
       orderBy: [{ points: "desc" }, { createdAt: "asc" }],
@@ -18,17 +20,47 @@ export default async function LeaderboardPage() {
       where: { status: SubmissionStatus.ACCEPTED },
       _count: { _all: true },
     }),
+    listRewardsWithStats({ activeOnly: true }),
   ]);
 
   const acceptedByUser = new Map(acceptedCounts.map((a) => [a.authorId, a._count._all]));
   const medal = ["🥇", "🥈", "🥉"];
+  const featured = rewards.filter((r) => r.remaining > 0).slice(0, 4);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Leaderboard</h1>
-        <p className="text-sm text-[#8da2c7]">Points are earned when the team accepts your submission.</p>
+        <p className="text-sm text-[#8da2c7]">Earn points when the team accepts your submission — then spend them on rewards.</p>
       </div>
+
+      {featured.length > 0 && (
+        <section className="space-y-3 rounded-xl border border-[#f5c451]/30 bg-[#f5c451]/5 p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-[#f5c451]">🎁 Rewards you can earn</h2>
+            <Link href="/rewards" className="text-xs text-[#f5c451] hover:underline">View all →</Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {featured.map((r) => (
+              <Link key={r.id} href="/rewards" className="panel panel-hover overflow-hidden">
+                <div className="relative aspect-video w-full bg-[#0a0e1c]">
+                  {r.imagePath ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.imagePath} alt={r.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-2xl text-[#2f4068]">🚀</span>
+                  )}
+                  <span className="absolute right-1.5 top-1.5 chip border-[#f5c451]/50 text-[#f5c451]">{r.pointCost} pts</span>
+                </div>
+                <div className="p-2">
+                  <div className="truncate text-xs font-medium text-[#e7eefc]">{r.name}</div>
+                  <div className="text-[10px] text-[#5a6c8f]">{r.remaining} left</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {users.length === 0 ? (
         <div className="panel p-10 text-center text-[#8da2c7]">No points yet. Be the first to get an asset accepted!</div>

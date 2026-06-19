@@ -30,6 +30,8 @@ model User {
   username      String?
   role          Role      @default(MEMBER)
   points        Int       @default(0)
+  // Solana wallet the user wants rewards sent to (validated, base58).
+  solanaAddress String?
   createdAt     DateTime  @default(now())
 
   accounts    Account[]
@@ -40,6 +42,55 @@ model User {
   reviews     Submission[]      @relation("SubmissionReviewer")
   templates   RequestTemplate[]
   apiKeys     ApiKey[]
+  redemptions Redemption[]
+  rewards     Reward[]          @relation("RewardCreator")
+  paidRedemptions Redemption[]  @relation("RedemptionPayer")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Rewards & redemptions (points → manually-fulfilled prizes)
+// ─────────────────────────────────────────────────────────────
+
+model Reward {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  imagePath   String?
+  pointCost   Int
+  quantity    Int      @default(1) // total ever available
+  active      Boolean  @default(true)
+  createdById String
+  createdAt   DateTime @default(now())
+
+  createdBy   User         @relation("RewardCreator", fields: [createdById], references: [id])
+  redemptions Redemption[]
+}
+
+enum RedemptionStatus {
+  PENDING   // points spent; awaiting manual payout by an admin
+  PAID      // admin sent the reward
+  CANCELLED // refunded; frees the slot
+}
+
+model Redemption {
+  id            String           @id @default(cuid())
+  rewardId      String
+  userId        String
+  pointsSpent   Int              // snapshot of the cost at redemption time
+  solanaAddress String           // snapshot of where to send it
+  status        RedemptionStatus @default(PENDING)
+  txSignature   String? // optional on-chain proof the admin records when paying
+  adminNote     String?
+  paidById      String?
+  paidAt        DateTime?
+  createdAt     DateTime         @default(now())
+
+  reward Reward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paidBy User?  @relation("RedemptionPayer", fields: [paidById], references: [id])
+
+  @@index([rewardId])
+  @@index([userId])
 }
 
 // API keys let team members create requests programmatically (via agents/scripts).

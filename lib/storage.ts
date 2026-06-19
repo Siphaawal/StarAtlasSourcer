@@ -22,7 +22,7 @@ export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // hard ceiling; per-request l
  */
 export async function saveImage(
   file: File,
-  subdir: "backgrounds" | "submissions",
+  subdir: "backgrounds" | "submissions" | "rewards",
   opts?: { maxBytes?: number }
 ): Promise<string> {
   if (!file || typeof file.arrayBuffer !== "function") {
@@ -44,7 +44,7 @@ export async function saveImage(
 export async function saveImageBuffer(
   bytes: Buffer,
   mime: string,
-  subdir: "backgrounds" | "submissions",
+  subdir: "backgrounds" | "submissions" | "rewards",
   opts?: { maxBytes?: number }
 ): Promise<string> {
   if (!ALLOWED_IMAGE_TYPES.includes(mime)) {
@@ -65,7 +65,7 @@ export async function saveImageBuffer(
 /** Fetch a remote image URL and persist it (used by the API for background uploads). */
 export async function saveRemoteImage(
   url: string,
-  subdir: "backgrounds" | "submissions",
+  subdir: "backgrounds" | "submissions" | "rewards",
   opts?: { maxBytes?: number }
 ): Promise<string> {
   let res: Response;
