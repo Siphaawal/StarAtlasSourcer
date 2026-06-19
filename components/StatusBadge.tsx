@@ -13,9 +13,7 @@ export function SubmissionStatusBadge({ status }: { status: SubmissionStatus }) 
 }
 
 export function RequestStatusBadge({ status }: { status: RequestStatus }) {
-  return status === RequestStatus.OPEN ? (
-    <span className="chip border-[#3ce8a0]/50 text-[#3ce8a0]">● Open</span>
-  ) : (
-    <span className="chip border-[#5a6c8f]/50 text-[#5a6c8f]">Closed</span>
-  );
+  if (status === RequestStatus.OPEN) return <span className="chip border-[#3ce8a0]/50 text-[#3ce8a0]">● Open</span>;
+  if (status === RequestStatus.DRAFT) return <span className="chip border-[#f5c451]/50 text-[#f5c451]">Draft</span>;
+  return <span className="chip border-[#5a6c8f]/50 text-[#5a6c8f]">Closed</span>;
 }

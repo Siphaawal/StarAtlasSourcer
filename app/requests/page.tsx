@@ -5,17 +5,30 @@ import { SpecChips } from "@/components/SpecChips";
 import { RequestStatusBadge } from "@/components/StatusBadge";
 import { PlatformFilter, platformWhere } from "@/components/PlatformFilter";
 import { platformChips } from "@/lib/constants";
+import { DraftActions } from "./DraftActions";
 
 export const metadata = { title: "Collab Requests — Star Atlas Sourcer" };
 
 export default async function RequestsPage({ searchParams }: { searchParams: Promise<{ platform?: string }> }) {
   const { platform = "all" } = await searchParams;
   const user = await getCurrentUser();
+  const reviewer = canReview(user?.role);
+  const platformFilter = platformWhere(platform);
+
   const requests = await prisma.collabRequest.findMany({
-    where: platformWhere(platform),
+    where: { ...platformFilter, status: { in: ["OPEN", "CLOSED"] } },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     include: { _count: { select: { submissions: true } }, author: true },
   });
+
+  // Drafts (e.g. agent-created, awaiting confirmation) are visible only to the team.
+  const drafts = reviewer
+    ? await prisma.collabRequest.findMany({
+        where: { ...platformFilter, status: "DRAFT" },
+        orderBy: { createdAt: "desc" },
+        include: { _count: { select: { submissions: true } }, author: true },
+      })
+    : [];
 
   return (
     <div className="space-y-6">
@@ -32,6 +45,32 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
       </div>
 
       <PlatformFilter current={platform} hrefFor={(k) => (k === "all" ? "/requests" : `/requests?platform=${k}`)} />
+
+      {reviewer && drafts.length > 0 && (
+        <div className="space-y-2 rounded-xl border border-[#f5c451]/30 bg-[#f5c451]/5 p-4">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-[#f5c451]">
+            Drafts awaiting publish <span className="chip border-[#f5c451]/40 text-[#f5c451]">{drafts.length}</span>
+          </h2>
+          <p className="text-xs text-[#8da2c7]">Agent/API-created requests that haven&apos;t gone live yet. Only the team sees these.</p>
+          <div className="divide-y divide-[#1f2c47] rounded-lg border border-[#1f2c47] bg-[#0a0e1c]">
+            {drafts.map((d) => (
+              <div key={d.id} className="flex items-center gap-3 p-3">
+                <Link href={`/requests/${d.id}`} className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="truncate font-medium text-[#e7eefc]">{d.title}</span>
+                    {d.createdViaApi && <span className="chip border-[#34e0ff]/40 text-[#34e0ff]">via API</span>}
+                    {platformChips(d).map((c) => (
+                      <span key={c} className="chip border-[#7b6cff]/40 text-[#a99bff]">{c}</span>
+                    ))}
+                  </div>
+                  <div className="text-xs text-[#5a6c8f]">by {d.author.username || d.author.name || "Team"}</div>
+                </Link>
+                <DraftActions requestId={d.id} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {requests.length === 0 ? (
         <div className="panel p-10 text-center text-[#8da2c7]">

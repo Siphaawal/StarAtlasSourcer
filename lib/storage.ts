@@ -36,13 +36,46 @@ export async function saveImage(
     throw new Error(`File too large (${(file.size / 1048576).toFixed(1)} MB). Max ${(maxBytes / 1048576).toFixed(0)} MB.`);
   }
 
-  const ext = EXT_BY_TYPE[file.type] ?? "png";
+  const bytes = Buffer.from(await file.arrayBuffer());
+  return saveImageBuffer(bytes, file.type, subdir);
+}
+
+/** Persist a raw image buffer (validates MIME + size). */
+export async function saveImageBuffer(
+  bytes: Buffer,
+  mime: string,
+  subdir: "backgrounds" | "submissions",
+  opts?: { maxBytes?: number }
+): Promise<string> {
+  if (!ALLOWED_IMAGE_TYPES.includes(mime)) {
+    throw new Error(`Unsupported image type "${mime || "unknown"}". Allowed: PNG, JPG, WEBP, GIF, SVG.`);
+  }
+  const maxBytes = Math.min(opts?.maxBytes ?? MAX_UPLOAD_BYTES, MAX_UPLOAD_BYTES);
+  if (bytes.length > maxBytes) {
+    throw new Error(`File too large (${(bytes.length / 1048576).toFixed(1)} MB). Max ${(maxBytes / 1048576).toFixed(0)} MB.`);
+  }
+  const ext = EXT_BY_TYPE[mime] ?? "png";
   const filename = `${randomUUID()}.${ext}`;
   const dir = path.join(UPLOAD_ROOT, subdir);
   await mkdir(dir, { recursive: true });
-
-  const bytes = Buffer.from(await file.arrayBuffer());
   await writeFile(path.join(dir, filename), bytes);
-
   return `/uploads/${subdir}/${filename}`;
+}
+
+/** Fetch a remote image URL and persist it (used by the API for background uploads). */
+export async function saveRemoteImage(
+  url: string,
+  subdir: "backgrounds" | "submissions",
+  opts?: { maxBytes?: number }
+): Promise<string> {
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch {
+    throw new Error("Could not fetch the image URL.");
+  }
+  if (!res.ok) throw new Error(`Image URL returned ${res.status}.`);
+  const mime = (res.headers.get("content-type") || "").split(";")[0].trim();
+  const bytes = Buffer.from(await res.arrayBuffer());
+  return saveImageBuffer(bytes, mime, subdir, opts);
 }

@@ -39,6 +39,21 @@ model User {
   votes       Vote[]
   reviews     Submission[]      @relation("SubmissionReviewer")
   templates   RequestTemplate[]
+  apiKeys     ApiKey[]
+}
+
+// API keys let team members create requests programmatically (via agents/scripts).
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  ownerId    String
+  hash       String    @unique // sha256 of the raw key — raw is shown once on creation
+  prefix     String // first chars of the raw key, for display
+  revoked    Boolean   @default(false)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 model Account {
@@ -81,6 +96,7 @@ model VerificationToken {
 // ─────────────────────────────────────────────────────────────
 
 enum RequestStatus {
+  DRAFT  // created (e.g. via agent/API) but not yet visible to the community
   OPEN
   CLOSED
 }
@@ -109,6 +125,8 @@ model CollabRequest {
   styleNotes      String        @default("")        // free-text guidance
   maxFileSizeMB   Int           @default(10)
   status          RequestStatus @default(OPEN)
+  // True when created programmatically via the API (agent), for display/audit.
+  createdViaApi   Boolean       @default(false)
   createdAt       DateTime      @default(now())
 
   authorId    String
@@ -210,5 +228,7 @@ model Settings {
   githubRepo       String  @default("")
   githubBranch     String  @default("main")
   githubPathPrefix String  @default("assets") // folder within the repo
+  // Default publish behavior for agent/API-created requests when they don't specify.
+  agentAutoPublish Boolean @default(false)
   updatedAt        DateTime @updatedAt @default(now())
 }

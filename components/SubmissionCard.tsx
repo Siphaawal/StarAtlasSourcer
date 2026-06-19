@@ -1,7 +1,7 @@
 import { SubmissionStatus } from "@prisma/client";
 import { SubmissionStatusBadge } from "./StatusBadge";
 import { VoteButton } from "./VoteButton";
-import { SubmissionThumbs } from "./SubmissionThumbs";
+import { SubmissionLightbox } from "./SubmissionLightbox";
 
 export type SubmissionCardData = {
   id: string;
@@ -31,7 +31,7 @@ export function SubmissionCard({
   return (
     <div className="panel panel-hover overflow-hidden">
       <div className="relative aspect-square w-full overflow-hidden bg-[#0a0e1c]">
-        <SubmissionThumbs images={submission.images} alt={submission.title || "submission"} />
+        <SubmissionLightbox images={submission.images} alt={submission.title || "submission"} />
         <div className="absolute left-2 top-2 z-10">
           <SubmissionStatusBadge status={submission.status} />
         </div>

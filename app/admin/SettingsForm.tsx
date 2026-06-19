@@ -10,6 +10,7 @@ type Settings = {
   githubRepo: string;
   githubBranch: string;
   githubPathPrefix: string;
+  agentAutoPublish: boolean;
 };
 
 export function SettingsForm({ settings, tokenPresent }: { settings: Settings; tokenPresent: boolean }) {
@@ -61,6 +62,16 @@ export function SettingsForm({ settings, tokenPresent }: { settings: Settings; t
             A submission becomes visible to the team once it hits this many community upvotes.
           </p>
         </div>
+        <label className="flex cursor-pointer items-start gap-2 text-sm text-[#e7eefc]">
+          <input name="agentAutoPublish" type="checkbox" defaultChecked={settings.agentAutoPublish} className="mt-0.5 h-4 w-4 accent-[#34e0ff]" />
+          <span>
+            Auto-publish agent-created requests
+            <span className="mt-0.5 block text-xs text-[#5a6c8f]">
+              When on, requests created via the API go live (OPEN) by default. When off, they land as DRAFT for a human to
+              publish. Agents can override this per request with <span className="font-mono">publish: true/false</span>.
+            </span>
+          </span>
+        </label>
       </div>
 
       <div className="panel space-y-4 p-6">

@@ -6,29 +6,32 @@ import { saveImage } from "@/lib/storage";
 import { Role, RequestStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { errMsg } from "@/lib/action-utils";
-import { clampImageCount } from "@/lib/constants";
+import { normalizeRequestInput } from "@/lib/request-input";
 
 type ActionResult = { ok: boolean; error?: string; id?: string };
-
-function num(v: FormDataEntryValue | null, fallback: number): number {
-  const n = parseInt(String(v ?? ""), 10);
-  return Number.isFinite(n) ? n : fallback;
-}
 
 export async function createRequest(formData: FormData): Promise<ActionResult> {
   try {
     const user = await requireRole(Role.TEAM, Role.ADMIN);
 
-    const title = String(formData.get("title") || "").trim();
-    if (!title) return { ok: false, error: "Title is required." };
-
-    const tierMin = Math.max(1, num(formData.get("tierMin"), 1));
-    const tierMax = Math.max(tierMin, num(formData.get("tierMax"), 5));
-    const maxFileSizeMB = Math.min(50, Math.max(1, num(formData.get("maxFileSizeMB"), 10)));
-
-    const targetWeb = formData.get("targetWeb") === "on";
-    const targetUE5 = formData.get("targetUE5") === "on";
-    if (!targetWeb && !targetUE5) return { ok: false, error: "Pick at least one platform (Web or UE5)." };
+    const norm = normalizeRequestInput({
+      title: formData.get("title"),
+      description: formData.get("description"),
+      assetType: formData.get("assetType"),
+      outputFileName: formData.get("outputFileName"),
+      imageCount: formData.get("imageCount"),
+      targetWeb: formData.get("targetWeb") === "on",
+      targetUE5: formData.get("targetUE5") === "on",
+      tierMin: formData.get("tierMin"),
+      tierMax: formData.get("tierMax"),
+      aspectRatio: formData.get("aspectRatio"),
+      resolution: formData.get("resolution"),
+      format: formData.get("format"),
+      colorPalette: formData.get("colorPalette"),
+      styleNotes: formData.get("styleNotes"),
+      maxFileSizeMB: formData.get("maxFileSizeMB"),
+    });
+    if (!norm.ok) return { ok: false, error: norm.error };
 
     let backgroundPath: string | undefined;
     const bg = formData.get("background");
@@ -37,25 +40,7 @@ export async function createRequest(formData: FormData): Promise<ActionResult> {
     }
 
     const created = await prisma.collabRequest.create({
-      data: {
-        title,
-        description: String(formData.get("description") || ""),
-        assetType: String(formData.get("assetType") || ""),
-        outputFileName: String(formData.get("outputFileName") || "").trim(),
-        imageCount: clampImageCount(num(formData.get("imageCount"), 1)),
-        targetWeb,
-        targetUE5,
-        tierMin,
-        tierMax,
-        aspectRatio: String(formData.get("aspectRatio") || "1:1"),
-        resolution: String(formData.get("resolution") || "1024x1024"),
-        format: String(formData.get("format") || "PNG"),
-        colorPalette: String(formData.get("colorPalette") || ""),
-        styleNotes: String(formData.get("styleNotes") || ""),
-        maxFileSizeMB,
-        backgroundPath,
-        authorId: user.id,
-      },
+      data: { ...norm.data, backgroundPath, authorId: user.id },
     });
 
     revalidatePath("/requests");
@@ -72,6 +57,19 @@ export async function setRequestStatus(requestId: string, status: RequestStatus)
     await prisma.collabRequest.update({ where: { id: requestId }, data: { status } });
     revalidatePath("/requests");
     revalidatePath(`/requests/${requestId}`);
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: errMsg(e) };
+  }
+}
+
+export async function deleteRequest(requestId: string): Promise<ActionResult> {
+  try {
+    await requireRole(Role.TEAM, Role.ADMIN);
+    await prisma.collabRequest.delete({ where: { id: requestId } });
+    revalidatePath("/requests");
+    revalidatePath("/admin");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: errMsg(e) };

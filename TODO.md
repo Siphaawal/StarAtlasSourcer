@@ -28,6 +28,9 @@ The single source of truth for what's built and what's left. Contributors: grab 
 - ✅ **GitHub commit-on-accept** (Octokit), per-tier filenames (`warp-drive-t1.png` … `-t5.png`)
 - ✅ **Platform tagging** (Web / UE5) on requests + filtering on requests & submissions; UE5 "Coming Soon" tab
 - ✅ **ATMTA usage disclaimer** on submission (required acknowledgment, recorded at submit time)
+- ✅ **Agent API** — REST `POST/GET /api/v1/requests` with per-member API keys; DRAFT vs OPEN (optional publish);
+  Admin key management + auto-publish toggle; **MCP server** (`create_collab_request` / `list_collab_requests`)
+- ✅ **Image lightbox** — click a submission thumbnail on the request detail to view full-size (arrow/keys for sets)
 
 ---
 

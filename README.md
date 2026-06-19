@@ -182,6 +182,49 @@ prisma/           schema, migrations, seed
 components/       Navbar, cards, badges, vote button
 ```
 
+## Agent API (create requests programmatically)
+
+Team members can let their agents/scripts create collab requests via a REST API authenticated with a
+per-member **API key** (generated in the Admin dashboard → *Agent API keys*).
+
+```bash
+curl -X POST http://localhost:3000/api/v1/requests \
+  -H "Authorization: Bearer sas_xxxxxxxx..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Warp Drive — Tiers 1-5",
+    "assetType": "Warp Drive",
+    "imageCount": 5,
+    "tierMin": 1, "tierMax": 5,
+    "targetWeb": true, "targetUE5": false,
+    "aspectRatio": "1:1", "resolution": "1024x1024", "format": "PNG",
+    "backgroundUrl": "https://.../reference.png",
+    "publish": false
+  }'
+```
+
+- **`publish`**: `true` → goes live (OPEN); `false` → saved as **DRAFT** for a human to confirm on `/requests`;
+  omit to use the admin default (*Auto-publish agent-created requests* toggle).
+- `GET /api/v1/requests` (same auth) lists recent requests.
+- Keys are stored hashed and shown once; revoke anytime in Admin.
+
+### MCP (for Claude / LLM agents)
+
+An MCP server ([`mcp/server.mjs`](mcp/server.mjs)) exposes `create_collab_request` and `list_collab_requests`
+tools so an LLM agent can post requests conversationally. Add to your MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "star-atlas-sourcer": {
+      "command": "node",
+      "args": ["<path>/StarAtlasSourcer/mcp/server.mjs"],
+      "env": { "SAS_BASE_URL": "http://localhost:3000", "SAS_API_KEY": "sas_..." }
+    }
+  }
+}
+```
+
 ## Regenerating screenshots / docs
 
 The diagrams above are inline [Mermaid](https://mermaid.js.org/) — edit them directly in this README and GitHub

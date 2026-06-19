@@ -12,23 +12,18 @@ export async function updateSettings(formData: FormData): Promise<ActionResult> 
     await requireRole(Role.ADMIN);
     const threshold = Math.max(1, parseInt(String(formData.get("upvoteThreshold") || "5"), 10) || 5);
 
+    const fields = {
+      upvoteThreshold: threshold,
+      githubOwner: String(formData.get("githubOwner") || "").trim(),
+      githubRepo: String(formData.get("githubRepo") || "").trim(),
+      githubBranch: String(formData.get("githubBranch") || "main").trim() || "main",
+      githubPathPrefix: String(formData.get("githubPathPrefix") || "assets").trim(),
+      agentAutoPublish: formData.get("agentAutoPublish") === "on",
+    };
     await prisma.settings.upsert({
       where: { id: 1 },
-      update: {
-        upvoteThreshold: threshold,
-        githubOwner: String(formData.get("githubOwner") || "").trim(),
-        githubRepo: String(formData.get("githubRepo") || "").trim(),
-        githubBranch: String(formData.get("githubBranch") || "main").trim() || "main",
-        githubPathPrefix: String(formData.get("githubPathPrefix") || "assets").trim(),
-      },
-      create: {
-        id: 1,
-        upvoteThreshold: threshold,
-        githubOwner: String(formData.get("githubOwner") || "").trim(),
-        githubRepo: String(formData.get("githubRepo") || "").trim(),
-        githubBranch: String(formData.get("githubBranch") || "main").trim() || "main",
-        githubPathPrefix: String(formData.get("githubPathPrefix") || "assets").trim(),
-      },
+      update: fields,
+      create: { id: 1, ...fields },
     });
 
     revalidatePath("/admin");
